@@ -7,18 +7,18 @@ namespace MusicBeePlugin.MediaWIKI
 {
     internal class AlbumInfo
     {
-        private string cover;
-        private string coverCor;
-        private string albumName;
-        private string pronunciation;
-        private string albumArtis;
-        private string date;
-        private string number;
-        private string type;
-        private string style;
-        private string website;
-        private string discCount;
-        private string totalSong;
+        private string cover; //封面
+        private string coverCor; //封面角色
+        private string albumName; //专辑名
+        private string pronunciation; //发音
+        private string albumArtis; //专辑音乐家
+        private string date; //发布日期
+        private string number; //专辑编号
+        private string type; //专辑类型
+        private string style; //专辑风格
+        private string website; //官网
+        private string discCount; //碟数
+        private string totalSong; //音轨数
 
 
 

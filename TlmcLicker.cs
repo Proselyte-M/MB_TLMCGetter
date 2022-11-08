@@ -103,14 +103,19 @@ namespace MusicBeePlugin
                             MediaWIKI.AlbumInfo[] albumInfos = new MediaWIKI.AlbumInfo[100];
 
                             albumInfos = MediaWIKI.mediawiki.GetAlbumInfo(albumArtist, album);
-                            MessageBox.Show(albumInfos[0].Arrangement);
+                            
+                            foreach (MediaWIKI.AlbumInfo albumInfo in albumInfos)
+                            {
+                                MessageBox.Show("专辑是：" + albumInfo.AlbumName + "\r\n曲目是：" + albumInfo.Title + "\r\n封面人物是：" + albumInfo.CoverCor);
+
+                            }
+                            MediaWIKI.mediawiki.GC();
+                            albumInfos = new MediaWIKI.AlbumInfo[albumInfos.Length];
                             break;
                         }
                         catch (Exception ex)
                         {
                             MessageBox.Show(ex.Message);
-
-                            throw;
                         }
                     }
 

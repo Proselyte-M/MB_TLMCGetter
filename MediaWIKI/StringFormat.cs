@@ -4,11 +4,57 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Collections.Generic;
 
 namespace MusicBeePlugin.MediaWIKI
 {
     internal class StringFormat
     {
+        /// <summary>
+        /// 判断节点是否为空，为空返回false;
+        /// </summary>
+        /// <param name="xmlNode"></param>
+        /// <returns></returns>
+        public static bool CheakNodeIsNotEmpty(XmlNode xmlNode)
+        {
+            try
+            {
+                XmlDocument xml = new XmlDocument();
+                xml.LoadXml(xmlNode.OuterXml);
+                string root = xml.SelectSingleNode("/").InnerXml;
+
+                if (root != null)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        public static bool CheakNodeIsNotEmpty(XmlNodeList xmlNode)
+        {
+            try
+            {
+                if (xmlNode.Count > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
 
 
 
@@ -31,7 +77,7 @@ namespace MusicBeePlugin.MediaWIKI
         /// </summary>
         /// <param name="albumInfos"></param>
         /// <returns></returns>
-        public static AlbumInfo[] FormatAlbumInfo(AlbumInfo[] albumInfos)
+        public static List<AlbumInfo> FormatAlbumInfo(List<AlbumInfo> albumInfos)
         {
             for (int i = 0; i < albumInfos.Count(); i++)
             {
