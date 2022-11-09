@@ -3,11 +3,40 @@ using System.Runtime.InteropServices;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using System.Xml.Linq;
+using System.Linq;
+using System.Xml;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace MusicBeePlugin
 {
+
+    public class TlmcConfig
+    {
+        public enum OutputFormat
+        {
+            Original = 0,
+            Both = 1,
+            Translation = 2
+        }
+
+        public OutputFormat format { get; set; } = OutputFormat.Both;
+        public bool fuzzy { get; set; } = false;
+    }
+
+
     public partial class Plugin
     {
+        private const string ProviderName = "TlmcMetadataReader";
+        private const string ConfigFilename = "TlmcMetadataReader_config";
+        private const string NoTranslateFilename = "TlmcMetadataReader_notranslate";
+        private TlmcConfig _config = new TlmcConfig();
+        private ComboBox _formatComboBox = null;
+        private CheckBox _fuzzyCheckBox = null;
+
         private MusicBeeApiInterface mbApiInterface;
         private PluginInfo about = new PluginInfo();
 
@@ -20,7 +49,7 @@ namespace MusicBeePlugin
             about.Description = "通过从thwiki获取东方曲目信息";
             about.Author = "来自TLMC（707882390）群的Proselyte";
             about.TargetApplication = "TLMC第三方信息备注";   //  the name of a Plugin Storage device or panel header for a dockable panel
-            about.Type = PluginType.General;
+            about.Type = PluginType.Storage;
             about.VersionMajor = 1;  // your plugin version
             about.VersionMinor = 0;
             about.Revision = 1;
@@ -28,8 +57,35 @@ namespace MusicBeePlugin
             about.MinApiRevision = MinApiRevision;
             about.ReceiveNotifications = (ReceiveNotificationFlags.PlayerEvents | ReceiveNotificationFlags.TagEvents);
             about.ConfigurationPanelHeight = 0;   // height in pixels that musicbee should reserve in a panel for config settings. When set, a handle to an empty panel will be passed to the Configure function
+            string noTranslatePath = Path.Combine(mbApiInterface.Setting_GetPersistentStoragePath(), NoTranslateFilename);
+            string configPath = Path.Combine(mbApiInterface.Setting_GetPersistentStoragePath(), ConfigFilename);
+            if (File.Exists(configPath))
+            {
+                try
+                {
+                    _config = JsonConvert.DeserializeObject<TlmcConfig>(File.ReadAllText(configPath, Encoding.UTF8));
+                }
+                catch (Exception ex)
+                {
+                    mbApiInterface.MB_Trace("[NeteaseMusic] Failed to load config" + ex);
+                }
+            }
+            if (File.Exists(noTranslatePath))
+            {
+                File.Delete(noTranslatePath);
+                _config.format = TlmcConfig.OutputFormat.Original;
+                SaveSettingsInternal();
+            }
             return about;
         }
+
+        private void SaveSettingsInternal()
+        {
+            string configPath = Path.Combine(mbApiInterface.Setting_GetPersistentStoragePath(), ConfigFilename);
+            var json = JsonConvert.SerializeObject(_config);
+            File.WriteAllText(configPath, json, Encoding.UTF8);
+        }
+
 
         public bool Configure(IntPtr panelHandle)
         {
@@ -48,7 +104,9 @@ namespace MusicBeePlugin
                 TextBox textBox = new TextBox();
                 textBox.Bounds = new Rectangle(60, 0, 100, textBox.Height);
                 configPanel.Controls.AddRange(new Control[] { prompt, textBox });
+
             }
+
             return false;
         }
 
@@ -68,18 +126,33 @@ namespace MusicBeePlugin
         // 卸载此插件 - 清理所有持久化的文件
         public void Uninstall()
         {
+            var dataPath = mbApiInterface.Setting_GetPersistentStoragePath();
+            var p = Path.Combine(dataPath, NoTranslateFilename);
+            if (File.Exists(p)) File.Delete(p);
+            string configPath = Path.Combine(mbApiInterface.Setting_GetPersistentStoragePath(), ConfigFilename);
+            if (File.Exists(configPath)) File.Delete(configPath);
+        }
+
+
+        public string RetrieveLyrics(string sourceFileUrl, string artist, string trackTitle, string album,
+            bool synchronisedPreferred, string provider)
+        {
+
+            return null;
         }
 
         // 接收来自MusicBee的事件通知
         // 你需要开始。ReceiveNotificationFlags = PlayerEvents 用于接收所有通知，而不仅仅是启动事件
         public void ReceiveNotification(string sourceFileUrl, NotificationType type)
         {
+            
+            
+            XDocument xDocument = new XDocument();
             // 根据通知类型执行一些操作
             switch (type)
             {
                 case NotificationType.PluginStartup:
                     // 执行启动初始化
-                    test();
                     switch (mbApiInterface.Player_GetPlayState())
                     {
                         case PlayState.Playing:
@@ -97,36 +170,37 @@ namespace MusicBeePlugin
                     {
                         try
                         {
-                            MediaWIKI.mediawiki wiki = new MediaWIKI.mediawiki();
+                            TlmcMediaWiki.Mediawiki mediawiki = new TlmcMediaWiki.Mediawiki();
+                            TlmcMediaWiki.ReadXML readXML = new TlmcMediaWiki.ReadXML();
                             string albumArtist = mbApiInterface.NowPlaying_GetFileTag(MetaDataType.AlbumArtist);
                             string album = mbApiInterface.NowPlaying_GetFileTag(MetaDataType.Album);
-                            MediaWIKI.AlbumInfo[] albumInfos = new MediaWIKI.AlbumInfo[100];
 
-                            albumInfos = MediaWIKI.mediawiki.GetAlbumInfo(albumArtist, album);
-                            
-                            foreach (MediaWIKI.AlbumInfo albumInfo in albumInfos)
-                            {
-                                MessageBox.Show("专辑是：" + albumInfo.AlbumName + "\r\n曲目是：" + albumInfo.Title + "\r\n封面人物是：" + albumInfo.CoverCor);
+                            xDocument = mediawiki.GetAlbumInfo(albumArtist, album);
+                            MessageBox.Show(xDocument.ToString());
+                            //MessageBox.Show(mbApiInterface.Library_SetFileTag(sourceFileUrl,MetaDataType.Genre,"1").ToString());
 
-                            }
-                            MediaWIKI.mediawiki.GC();
-                            albumInfos = new MediaWIKI.AlbumInfo[albumInfos.Length];
-                            break;
                         }
                         catch (Exception ex)
                         {
                             MessageBox.Show(ex.Message);
                         }
+                        finally
+                        {
+                            xDocument.Elements("root").Remove();
+                        }
                     }
+                    
+
 
                     // ...
                     break;
             }
+            xDocument = new XDocument();
         }
 
-        private void test()
+        private void GetProviders()
         {
-            
+
         }
 
 
@@ -144,24 +218,24 @@ namespace MusicBeePlugin
 
 
 
-        // return an array of lyric or artwork provider names this plugin supports
-        // the providers will be iterated through one by one and passed to the RetrieveLyrics/ RetrieveArtwork function in order set by the user in the MusicBee Tags(2) preferences screen until a match is found
+        // 返回此插件支持的歌词或插图提供程序名称数组
+        // 提供程序将被逐个迭代并传递给 检索歌词/按照用户在 MusicBee 标签（2） 首选项屏幕中设置的顺序检索图稿功能，直到找到匹配项
         //public string[] GetProviders()
         //{
         //    return null;
         //}
 
-        // return lyrics for the requested artist/title from the requested provider
-        // only required if PluginType = LyricsRetrieval
-        // return null if no lyrics are found
+        // 从请求的提供商返回所请求的艺术家/标题的歌词
+        // 仅当插件类型 = 歌词检索时才需要
+        // 如果未找到歌词，则返回 null
         //public string RetrieveLyrics(string sourceFileUrl, string artist, string trackTitle, string album, bool synchronisedPreferred, string provider)
         //{
         //    return null;
         //}
 
-        // return Base64 string representation of the artwork binary data from the requested provider
-        // only required if PluginType = ArtworkRetrieval
-        // return null if no artwork is found
+        // 从请求的提供程序返回图稿二进制数据的 Base64 字符串表示形式
+        // 仅当插件类型 = 图稿检索时才需要
+        // 如果未找到图稿，则返回 null
         //public string RetrieveArtwork(string sourceFileUrl, string albumArtist, string album, string provider)
         //{
         //    //Return Convert.ToBase64String(artworkBinaryData)
