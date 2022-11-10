@@ -36,3 +36,10 @@
  现在不知道怎么往MusicBee右键菜单里添加项目，只能每次切换歌曲的时候调用插件。
  另外，现在只研究出来，通过 mbApiInterface.Library_SetFileTag()方法写入tag，它要求三个参数，第一个是文件路径，第二个是标签类型，第三个就是标签值。还没搞明白怎么遍历整个专辑的文件将专辑信息写入到所有歌曲中。目前只实现了往专辑的第一首曲目里写入标签。
  另外另外，为什么thwiki通过网页搜索的结果和API搜索的不一样啊，有些专辑同一个关键词但是API就是搜索不到，是我搜索接口调用的时候什么玩意没搞对么？
+
+
+ #引用信息
+
+ 部分代码参考了
+ [Netease Lyric](https://github.com/cqjjjzr/MusicBee-NeteaseLyrics) 
+ [MB_SubSonic](https://github.com/BlitterStudio/MB_SubSonic)
