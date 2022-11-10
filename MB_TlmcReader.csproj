@@ -88,6 +88,27 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\TlmcMediaWiki\CookieHelper.cs">
+      <Link>CookieHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\TlmcMediaWiki\HttpUtility.cs">
+      <Link>HttpUtility.cs</Link>
+    </Compile>
+    <Compile Include="..\TlmcMediaWiki\MathS.cs">
+      <Link>MathS.cs</Link>
+    </Compile>
+    <Compile Include="..\TlmcMediaWiki\mediawiki.cs">
+      <Link>mediawiki.cs</Link>
+    </Compile>
+    <Compile Include="..\TlmcMediaWiki\ReadXML.cs">
+      <Link>ReadXML.cs</Link>
+    </Compile>
+    <Compile Include="..\TlmcMediaWiki\SearchListReq.cs">
+      <Link>SearchListReq.cs</Link>
+    </Compile>
+    <Compile Include="..\TlmcMediaWiki\StringFormat.cs">
+      <Link>StringFormat.cs</Link>
+    </Compile>
     <Compile Include="MusicBeeInterface.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
