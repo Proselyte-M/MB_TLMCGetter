@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Collections.Generic;
 using System.Xml.Linq;
-using System.Linq;
-using System.Xml;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
