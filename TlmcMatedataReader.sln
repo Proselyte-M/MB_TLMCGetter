@@ -9,6 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TLmcTest", "..\TLmcTest\TLm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TlmcMediaWiki", "..\TlmcMediaWiki\TlmcMediaWiki.csproj", "{D0863009-6580-4B00-A93B-1912766F1CCA}"
 EndProject
+
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
