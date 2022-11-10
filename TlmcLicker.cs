@@ -49,7 +49,7 @@ namespace MusicBeePlugin
             about.Description = "通过从thwiki获取东方曲目信息";
             about.Author = "来自TLMC（707882390）群的Proselyte";
             about.TargetApplication = "TLMC第三方信息备注";   //  the name of a Plugin Storage device or panel header for a dockable panel
-            about.Type = PluginType.Storage;
+            about.Type = PluginType.General;
             about.VersionMajor = 1;  // your plugin version
             about.VersionMinor = 0;
             about.Revision = 1;
@@ -174,10 +174,38 @@ namespace MusicBeePlugin
                             TlmcMediaWiki.ReadXML readXML = new TlmcMediaWiki.ReadXML();
                             string albumArtist = mbApiInterface.NowPlaying_GetFileTag(MetaDataType.AlbumArtist);
                             string album = mbApiInterface.NowPlaying_GetFileTag(MetaDataType.Album);
+                            string dataPath = mbApiInterface.Setting_GetPersistentStoragePath() + "TlmcAlbumMetadata" + "\\" + albumArtist;
+                            if (File.Exists(dataPath+"\\"+album+".xml"))
+                            { 
+                                xDocument=XDocument.Load(dataPath + "\\" + album + ".xml");                            
+                            }
+                            else 
+                            { 
+                                xDocument = mediawiki.GetAlbumInfo(sourceFileUrl, albumArtist, album);
+                                if (!string.IsNullOrEmpty(readXML.ReadAlbumSingle(xDocument, "名称")))
+                                {
+                                    WriteXml(xDocument, dataPath, album + ".xml");
+                                }
+                                
+                            }
+                           
+                            //MessageBox.Show(xDocument.ToString());
+                           
 
-                            xDocument = mediawiki.GetAlbumInfo(albumArtist, album);
-                            MessageBox.Show(xDocument.ToString());
-                            //MessageBox.Show(mbApiInterface.Library_SetFileTag(sourceFileUrl,MetaDataType.Genre,"1").ToString());
+                            mbApiInterface.Library_SetFileTag(
+                                readXML.ReadFilePath(xDocument), MetaDataType.Custom1, readXML.ReadAlbumSingle(xDocument, "角色"));
+                            mbApiInterface.Library_SetFileTag(
+                                readXML.ReadFilePath(xDocument), MetaDataType.Custom2, readXML.ReadAlbumSingle(xDocument, "名称"));
+                            mbApiInterface.Library_SetFileTag(
+                                readXML.ReadFilePath(xDocument), MetaDataType.Custom3, readXML.ReadAlbumSingle(xDocument, "制作方"));
+                            mbApiInterface.Library_SetFileTag(
+                                readXML.ReadFilePath(xDocument), MetaDataType.Custom4, readXML.ReadAlbumSingle(xDocument, "首发日期"));
+                            mbApiInterface.Library_SetFileTag(
+                                readXML.ReadFilePath(xDocument), MetaDataType.Custom5, readXML.ReadAlbumSingle(xDocument, "编号"));
+
+                            //MessageBox.Show(mbApiInterface.Library_SetFileTag(sourceFileUrl, MetaDataType.Custom1, "由插件创建的tag").ToString());
+                            mbApiInterface.Library_CommitTagsToFile(sourceFileUrl);
+                            mbApiInterface.MB_RefreshPanels();
 
                         }
                         catch (Exception ex)
@@ -198,23 +226,17 @@ namespace MusicBeePlugin
             xDocument = new XDocument();
         }
 
-        private void GetProviders()
+        public static void WriteXml(XDocument xml, string path, string filename)
         {
-
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            using (FileStream file = new FileStream(path + "\\" + filename, FileMode.Create))
+            {
+                xml.Save(file);
+            }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
