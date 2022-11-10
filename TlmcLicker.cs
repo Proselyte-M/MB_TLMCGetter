@@ -22,7 +22,6 @@ namespace MusicBeePlugin
         public bool fuzzy { get; set; } = false;
     }
 
-
     public partial class Plugin
     {
         private const string ProviderName = "TlmcMetadataReader";
