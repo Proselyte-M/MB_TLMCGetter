@@ -41,5 +41,5 @@
  #引用信息
 
  部分代码参考了
- [Netease Lyric](https://github.com/cqjjjzr/MusicBee-NeteaseLyrics) 
- [MB_SubSonic](https://github.com/BlitterStudio/MB_SubSonic)
+ [Netease Lyric](https://github.com/cqjjjzr/MusicBee-NeteaseLyrics)  \r\n
+ [MB_SubSonic](https://github.com/BlitterStudio/MB_SubSonic) \r\n
